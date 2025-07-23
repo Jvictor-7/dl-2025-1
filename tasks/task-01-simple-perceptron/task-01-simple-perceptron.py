@@ -13,28 +13,28 @@ class Perceptron:
 
     def _init_weights(self):
         rng = np.random.default_rng(self.seed)
-        ### START CODE HERE ###
-        ### TODO: Initialize weights with small Gaussian noise using rng.normal
-
-        ### END CODE HERE ###
+        self.weights = rng.normal(0.0, 0.01, self.input_size + 1)
 
     def activation(self, x):
-        ### START CODE HERE ###
-        ### TODO: Implement the step activation function
-        pass
-        ### END CODE HERE ###
+        return np.where(x >= 0, 1, -1)
 
     def predict(self, X):
-        ### START CODE HERE ###
-        ### TODO: Add a bias term to X, compute dot product with weights, and apply activation
-        pass
-        ### END CODE HERE ###
+        X_bias = np.hstack([X, np.ones((X.shape[0], 1))])
+        linear_output = np.dot(X_bias, self.weights)
+        return self.activation(linear_output)
 
     def fit(self, X, y):
-        ### START CODE HERE ###
-        ### TODO: Implement the perceptron learning rule using weight updates
-        pass
-        ### END CODE HERE ###
+        X_bias = np.hstack([X, np.ones((X.shape[0], 1))])
+        for epoch in range(self.epochs):
+            errors = 0
+            for xi, target in zip(X_bias, y):
+                prediction = self.activation(np.dot(xi, self.weights))
+                if prediction != target:
+                    self.weights += self.learning_rate * target * xi
+                    errors += 1
+            if errors == 0:
+                print(f"Convergiu na época {epoch+1}")
+                break
 
 def generate_data(seed=0, samples=200, noise=1.5):
     """
