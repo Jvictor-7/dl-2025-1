@@ -20,21 +20,16 @@ class Perceptron:
 
     def predict(self, X):
         X_bias = np.hstack([X, np.ones((X.shape[0], 1))])
-        linear_output = np.dot(X_bias, self.weights)
-        return self.activation(linear_output)
+        z = np.dot(X_bias, self.weights)
+        return self.activation(z)
 
     def fit(self, X, y):
         X_bias = np.hstack([X, np.ones((X.shape[0], 1))])
-        for epoch in range(self.epochs):
-            errors = 0
+        for _ in range(self.epochs):
             for xi, target in zip(X_bias, y):
                 prediction = self.activation(np.dot(xi, self.weights))
-                if prediction != target:
-                    self.weights += self.learning_rate * target * xi
-                    errors += 1
-            if errors == 0:
-                print(f"Convergiu na época {epoch+1}")
-                break
+                update = self.learning_rate * (target - prediction)
+                self.weights += update * xi
 
 def generate_data(seed=0, samples=200, noise=1.5):
     """
