@@ -7,52 +7,48 @@ class LogisticNeuron:
         self.weights = np.random.randn(input_dim)
         self.bias = np.random.randn()
         self.learning_rate = learning_rate
+        self.epsilon = 1e-8
+        self.threshold = 0
         self.epochs = epochs
         self.loss_history = []
 
     def tanh(self, z):
-        ### START CODE HERE ###
-        ### TODO: implement the tanh activation
-        a = None
-        ### END CODE HERE ###
+        exp_pos = np.exp(z)
+        exp_neg = np.exp(-z)
+        a = (exp_pos - exp_neg) / (exp_pos + exp_neg + self.epsilon)
         return a
 
     def predict_proba(self, X):
-        ### START CODE HERE ###
-        ### TODO: compute activation output using tanh
-        z = None
-        a = None
-        ### END CODE HERE ###
+        z = np.dot(X, self.weights) + self.bias
+        a = self.tanh(z)
         return a
 
     def predict(self, X):
-        prediction = None
+        prediction = (self.predict_proba(X) >= self.threshold).astype(int)
         return prediction
 
     def train(self, X, y):
-        ### START CODE HERE ###
-        ### TODO: convert y from {0, 1} to {-1, +1}
-        y_tanh = y
+        y_tanh = 2 * y - 1
 
         for _ in range(self.epochs):
-            # Forward pass
-            y_pred = None
+            y_pred = self.predict_proba(X)
 
-            # Compute error
-            error = None
+            error = y_pred - y_tanh
+            
+            dz = error * (1 - y_pred ** 2)
+            
+            grad_w = np.dot(X.T, dz) / len(y_tanh)
+            grad_b = np.mean(dz)
 
-            # Gradients
-            grad_w = None
-            grad_b = None
+            self.weights -= self.learning_rate * grad_w
+            self.bias -= self.learning_rate * grad_b
 
-            # Update parameters
-            self.weights = None
-            self.bias = None
-
-            # Compute MSE loss
-            loss = None
+            loss = np.mean(error ** 2)
             self.loss_history.append(loss)
-        ### END CODE HERE ###
+    
+    def accuracy(self, X, y):
+        y_pred = self.predict(X)
+        return np.mean(y_pred == y)
 
 def generate_dataset():
     X, y = make_blobs(n_samples=200, centers=2, random_state=42, cluster_std=2.0)
@@ -86,6 +82,9 @@ def main():
     # Train the model
     neuron = LogisticNeuron(input_dim=2, learning_rate=0.1, epochs=100)
     neuron.train(X, y)
+    
+    accuracy = neuron.accuracy(X, y)
+    print(f"Test Accuracy: {accuracy:.2f}")
 
     # Plot decision boundary
     plot_decision_boundary(neuron, X, y)
